@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Agenda de Contactos</title>
+<style>
+body{
+    font-family: Arial;
+    margin: 20px;
+    background: #f4f4f4;
+}
+h1{
+    text-align: center;
+}
+input{
+    margin: 5px;
+    padding: 8px;
+}
+button{
+    padding: 8px;
+    margin: 5px;
+}
+.card{
+    background: white;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 10px;
+}
+img{
+    width: 100px;
+    height: 100px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Agenda de Contactos</h1>
+
+<h3>Total de contactos: <span id="contador">0</span></h3>
+
+<input type="text" id="nombre" placeholder="Nombre">
+<input type="text" id="direccion" placeholder="Dirección">
+<input type="text" id="telefono" placeholder="Teléfono">
+<input type="email" id="correo" placeholder="Correo">
+<input type="text" id="foto" placeholder="URL de Foto">
+
+<br>
+
+<button onclick="agregarContacto()">Agregar</button>
+<button onclick="limpiarAgenda()">Limpiar Agenda</button>
+
+<br><br>
+
+<input type="text" id="buscar" placeholder="Buscar..." onkeyup="buscarContacto()">
+
+<div id="lista"></div>
+
+<script>
+
+let agenda = JSON.parse(localStorage.getItem("agenda")) || [];
+let editando = null;
+
+
+function guardarDatos(){
+    localStorage.setItem("agenda", JSON.stringify(agenda));
+}
+
+
+function mostrarContactos(lista = agenda){
+    let contenedor = document.getElementById("lista");
+    contenedor.innerHTML = "";
+
+    lista.forEach((contacto, index) => {
+
+        let card = `
+        <div class="card">
+            <img src="${contacto.urlFoto}" onerror="this.src='https://via.placeholder.com/100'">
+            <p><b>Nombre:</b> ${contacto.nombre}</p>
+            <p><b>Dirección:</b> ${contacto.direccion}</p>
+            <p><b>Teléfono:</b> ${contacto.telefono}</p>
+            <p><b>Correo:</b> ${contacto.correo}</p>
+
+            <button onclick="editar(${index})">Editar</button>
+            <button onclick="eliminar(${index})">Eliminar</button>
+        </div>
+        `;
+
+        contenedor.innerHTML += card;
+    });
+
+    document.getElementById("contador").innerText = agenda.length;
+}
+
+
+function agregarContacto(){
+
+    let contacto = {
+        nombre: document.getElementById("nombre").value,
+        direccion: document.getElementById("direccion").value,
+        telefono: document.getElementById("telefono").value,
+        correo: document.getElementById("correo").value,
+        urlFoto: document.getElementById("foto").value
+    };
+
+    if(editando !== null){
+        agenda[editando] = contacto;
+        editando = null;
+    } else {
+        agenda.push(contacto);
+    }
+
+    guardarDatos();
+    limpiarInputs();
+    mostrarContactos();
+}
+
+
+function editar(index){
+    let c = agenda[index];
+
+    document.getElementById("nombre").value = c.nombre;
+    document.getElementById("direccion").value = c.direccion;
+    document.getElementById("telefono").value = c.telefono;
+    document.getElementById("correo").value = c.correo;
+    document.getElementById("foto").value = c.urlFoto;
+
+    editando = index;
+}
+
+
+function eliminar(index){
+    agenda.splice(index,1);
+    guardarDatos();
+    mostrarContactos();
+}
+
+
+function buscarContacto(){
+    let texto = document.getElementById("buscar").value.toLowerCase();
+
+    let filtrados = agenda.filter(c =>
+        c.nombre.toLowerCase().includes(texto) ||
+        c.direccion.toLowerCase().includes(texto) ||
+        c.telefono.includes(texto) ||
+        c.correo.toLowerCase().includes(texto)
+    );
+
+    mostrarContactos(filtrados);
+}
+
+
+function limpiarInputs(){
+    document.getElementById("nombre").value = "";
+    document.getElementById("direccion").value = "";
+    document.getElementById("telefono").value = "";
+    document.getElementById("correo").value = "";
+    document.getElementById("foto").value = "";
+}
+
+
+function limpiarAgenda(){
+    localStorage.removeItem("agenda");
+    agenda = [];
+    mostrarContactos();
+}
+
+
+mostrarContactos();
+
+</script>
+
+</body>
+</html
